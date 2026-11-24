@@ -35,10 +35,72 @@ const F = {
   amount: { key: 'amount', label: 'Inhalt / Füllstand', ph: 'z. B. 50 ml, ca. 90 % voll' },
 };
 
+// ---------- Spezial: Damen & Kinder ----------
+const KF = {
+  kidSize: { key: 'size', label: 'Größe (cm)', ph: 'z. B. 98 oder 98/104', title: v => `Gr. ${v}` },
+  gender: { key: 'gender', label: 'Für', type: 'chips', options: ['Mädchen', 'Junge', 'Unisex'] },
+  bundle: { key: 'bundle', label: 'Paket: Anzahl Teile', ph: 'leer = Einzelteil', type: 'number' },
+  womenSize: { key: 'size', label: 'Größe', ph: 'z. B. 38 oder M', title: v => `Gr. ${v}` },
+  length: { key: 'length', label: 'Länge', type: 'chips', options: ['Mini', 'Knielang', 'Midi', 'Maxi', 'Cropped'] },
+  occasion: { key: 'occasion', label: 'Anlass', type: 'chips', options: ['Alltag', 'Business', 'Party', 'Hochzeitsgast', 'Urlaub', 'Sport'] },
+  trend: { key: 'style', label: 'Stil', type: 'chips', options: ['Basic', 'Vintage', 'Boho', 'Y2K', 'Old Money', 'Streetwear', 'Romantisch', 'Elegant'] },
+};
+
+// Kindergröße (cm) → Alter
+export const KID_AGE = [
+  [50, 'Neugeborene'], [56, '0–2 Monate'], [62, '2–4 Monate'], [68, '4–6 Monate'], [74, '6–9 Monate'], [80, '9–12 Monate'],
+  [86, '12–18 Monate'], [92, '18–24 Monate'], [98, '2–3 Jahre'], [104, '3–4 Jahre'], [110, '4–5 Jahre'], [116, '5–6 Jahre'],
+  [122, '6–7 Jahre'], [128, '7–8 Jahre'], [134, '8–9 Jahre'], [140, '9–10 Jahre'], [146, '10–11 Jahre'], [152, '11–12 Jahre'],
+  [158, '12–13 Jahre'], [164, '13–14 Jahre'], [170, '14–15 Jahre'], [176, '15–16 Jahre'],
+];
+export function kidAge(size) {
+  const n = parseInt(String(size || '').match(/\d{2,3}/)?.[0], 10);
+  if (!n || n < 44 || n > 182) return '';
+  let best = KID_AGE[0];
+  for (const row of KID_AGE) if (Math.abs(row[0] - n) < Math.abs(best[0] - n)) best = row;
+  return best[1];
+}
+// Damengröße DE ↔ international
+const WOMEN_SIZES = { 32: 'XXS', 34: 'XS', 36: 'S', 38: 'M', 40: 'L', 42: 'XL', 44: 'XXL', 46: '3XL', 48: '4XL' };
+const WOMEN_INT = Object.fromEntries(Object.entries(WOMEN_SIZES).map(([k, v]) => [v, k]));
+export function womenSizeHint(size) {
+  const s = String(size || '').trim().toUpperCase();
+  if (WOMEN_SIZES[s]) return `entspricht ${WOMEN_SIZES[s]}`;
+  if (WOMEN_INT[s]) return `entspricht ${WOMEN_INT[s]}`;
+  return '';
+}
+// Passende Messpunkte je Artikeltyp (weniger Rückfragen)
+export function measureHint(type) {
+  const t = String(type || '').toLowerCase();
+  if (/(hose|jeans|leggings|shorts|jogger|chino|matschhose|buddelhose)/.test(t)) return 'Bundweite flach __ cm, Innenbein __ cm, Gesamtlänge __ cm';
+  if (/(kleid|rock)/.test(t)) return 'Achsel–Achsel __ cm, Taille __ cm, Länge __ cm';
+  if (/(body|strampler|schlafanzug|schneeanzug|overall|jumpsuit)/.test(t)) return 'Gesamtlänge __ cm, Achsel–Achsel __ cm';
+  if (/(bh|bikini)/.test(t)) return 'Unterbrustumfang __ cm, Körbchen __';
+  return 'Achsel–Achsel __ cm, Länge __ cm, Ärmel __ cm';
+}
+
 // base: Preisspanne [min,max] in € für Marke "Standard" + Zustand "Sehr gut"
 export const CATEGORIES = {
+  women: {
+    label: 'Damen', icon: '👗', wearable: true, fashion: true, base: [8, 18],
+    quickTypes: ['Kleid', 'Bluse', 'Top', 'T-Shirt', 'Pullover', 'Strickjacke', 'Jeans', 'Hose', 'Rock', 'Blazer', 'Jacke', 'Mantel', 'Jumpsuit', 'Bikini'],
+    fields: [F.brand, F.type, KF.womenSize, F.color, F.material, F.fit, KF.length, KF.occasion, KF.trend, F.garmentMeasures],
+    title: ['brand', 'type', 'length', 'style', 'color', 'size'],
+    tags: ['damenmode', 'mode'],
+    checklist: ['Cover: ganzes Teil glatt, Hochformat, heller Hintergrund', 'Getragen-Foto (selbst, Gesicht darf fehlen) – zeigt Passform', 'Rückseite', 'Marken- & Größenetikett', 'Pflegeetikett (Material)', 'Stoff/Muster nah', 'Details: Knöpfe, Reißverschluss, Ausschnitt', 'Mängel ehrlich: Pilling, Flecken, Fäden'],
+    hint: 'Größen fallen je Marke anders aus – Maße + „fällt normal/klein/groß aus“ verhindern Rückfragen.',
+  },
+  kids: {
+    label: 'Kinder', icon: '🧒', wearable: true, fashion: true, kids: true, base: [3, 8],
+    quickTypes: ['Body', 'Strampler', 'Shirt', 'Pullover', 'Hose', 'Jeans', 'Leggings', 'Kleid', 'Jacke', 'Schneeanzug', 'Matschhose', 'Schlafanzug', 'Set', 'Kleiderpaket'],
+    fields: [KF.gender, F.brand, F.type, KF.kidSize, F.color, F.material, KF.bundle, F.garmentMeasures],
+    title: ['brand', 'type', 'gender', 'color', 'size'],
+    tags: ['kinderkleidung', 'kindermode'],
+    checklist: ['Cover: flach gelegt (Flatlay) auf hellem Untergrund', 'Größenetikett', 'Knie / Ellbogen (typische Abnutzung)', 'Bündchen & Kragen', 'Flecken-Check im Tageslicht', 'Rückseite', 'Paket: alle Teile zusammen + einzeln'],
+    hint: 'Kinderkleidung: Größe im Titel ist Pflicht – Eltern suchen gezielt nach „Gr. 98“. Pakete pro Größe verkaufen sich besonders gut.',
+  },
   fashion: {
-    label: 'Kleidung', icon: '👕', wearable: true, base: [8, 16],
+    label: 'Herren & Unisex', icon: '👕', wearable: true, fashion: true, base: [8, 16],
     fields: [F.brand, F.type, F.size, F.color, F.material, F.fit, F.style, F.garmentMeasures],
     title: ['brand', 'type', 'style', 'color', 'size'],
     tags: ['mode', 'fashion'],
@@ -131,8 +193,12 @@ export const CATEGORIES = {
 // Markenstufen → Preisfaktor
 export const BRAND_TIERS = {
   luxury: { f: 7, list: ['gucci', 'prada', 'louis vuitton', 'chanel', 'dior', 'hermès', 'hermes', 'balenciaga', 'saint laurent', 'ysl', 'bottega veneta', 'fendi', 'celine', 'loewe', 'burberry', 'moncler', 'versace', 'valentino', 'givenchy', 'miu miu', 'off-white', 'stone island', 'canada goose'] },
-  premium: { f: 2, list: ['ralph lauren', 'polo ralph lauren', 'tommy hilfiger', 'calvin klein', 'hugo boss', 'boss', 'lacoste', 'levi\'s', 'levis', 'nike', 'adidas', 'new balance', 'converse', 'vans', 'puma', 'asics', 'dr. martens', 'birkenstock', 'ugg', 'the north face', 'patagonia', 'arc\'teryx', 'carhartt', 'diesel', 'g-star', 'michael kors', 'coach', 'guess', 'liebeskind', 'marc o\'polo', 'cos', 'arket', '& other stories', 'massimo dutti', 'apple', 'sony', 'samsung', 'nintendo', 'playstation', 'bose', 'dyson', 'kitchenaid', 'smeg', 'le creuset', 'wmf', 'lego', 'playmobil', 'barbie', 'hay', 'muuto', 'ferm living', 'villeroy & boch', 'rosenthal', 'jellycat', 'stanley'] },
-  budget: { f: 0.6, list: ['primark', 'shein', 'kik', 'takko', 'c&a', 'h&m', 'h & m', 'new yorker', 'tally weijl', 'pimkie', 'clockhouse', 'temu', 'tedi', 'action', 'ernsting\'s family', 'ernstings family', 'no name', 'ohne marke'] },
+  premium: { f: 2, list: ['ralph lauren', 'polo ralph lauren', 'tommy hilfiger', 'calvin klein', 'hugo boss', 'boss', 'lacoste', 'levi\'s', 'levis', 'nike', 'adidas', 'new balance', 'converse', 'vans', 'puma', 'asics', 'dr. martens', 'birkenstock', 'ugg', 'the north face', 'patagonia', 'arc\'teryx', 'carhartt', 'diesel', 'g-star', 'michael kors', 'coach', 'guess', 'liebeskind', 'marc o\'polo', 'cos', 'arket', '& other stories', 'massimo dutti', 'apple', 'sony', 'samsung', 'nintendo', 'playstation', 'bose', 'dyson', 'kitchenaid', 'smeg', 'le creuset', 'wmf', 'lego', 'playmobil', 'barbie', 'hay', 'muuto', 'ferm living', 'villeroy & boch', 'rosenthal', 'jellycat', 'stanley',
+    // Damen
+    'hallhuber', 'opus', 'marc cain', 'drykorn', 'armedangels', 'hessnatur', 'mos mosh', 'samsøe samsøe', 'samsoe samsoe', 'ganni', 'sézane', 'sezane', 'rixo', 'reformation', 'sandro', 'maje', 'claudie pierlot', 'anine bing', 'max mara', 'weekend max mara', 'seidensticker', 'gant', 'barbour', 'filippa k', 'by malene birger', 'ba&sh', 'wolford', 'spanx', 'lululemon', 'alo yoga', 'jacquemus', 'isabel marant étoile', 'tory burch', 'acne studios',
+    // Kinder
+    'mini boden', 'boden', 'petit bateau', 'frugi', 'maxomorra', 'liewood', 'konges sløjd', 'konges slojd', 'bobo choses', 'mini rodini', 'tinycottons', 'the animals observatory', 'molo', 'reima', 'didriksons', 'polarn o. pyret', 'jako-o', 'sanetta', 'steiff', 'disana', 'engel', 'joha', 'lässig', 'lassig', 'cos kids', 'bonpoint', 'tartine et chocolat', 'jacadi', 'ralph lauren kids', 'tommy hilfiger kids'] },
+  budget: { f: 0.6, list: ['primark', 'shein', 'kik', 'takko', 'c&a', 'h&m', 'h & m', 'new yorker', 'tally weijl', 'pimkie', 'clockhouse', 'temu', 'tedi', 'action', 'ernsting\'s family', 'ernstings family', 'no name', 'ohne marke', 'lupilu', 'topomini', 'impidimpi', 'alana', 'pocopiano', 'yigga', 'kiki & koko', 'dopodopo', 'esmara', 'blue motion', 'okay', 'orsay', 'janina', 'amisu', 'bpc', 'bonprix', 'zeeman', 'pepco', 'sinsay'] },
 };
 
 export const CONDITION_FACTOR = { nwt: 1.6, nwot: 1.35, vgood: 1, good: 0.75, ok: 0.5 };
@@ -160,6 +226,8 @@ export const IMAGENET_MAP = [
 
 // Freitext-Erkennung (falls KI aus/offline): Wortstämme → Kategorie
 export const TEXT_HINTS = {
+  kids: /(body|strampler|baby|kinder|mädchen|junge|schneeanzug|matschhose|buddelhose|lätzchen|kita|kleiderpaket|spieler|babyschlafsack|pumphose)/i,
+  women: /(kleid|bluse|rock\b|minirock|midirock|bh\b|bikini|badeanzug|jumpsuit|tunika|damen|dessous|crop ?top|korsage|wickel)/i,
   fashion: /(pullover|pulli|sweater|shirt|hemd|bluse|top|hoodie|jacke|mantel|parka|blazer|weste|kleid|rock|hose|jeans|leggings|shorts|jogger|cardigan|strick|anzug|overall|jumpsuit|body|bikini|badeanzug|schal|mütze|cap|hut|handschuh|socken|bh|dessous|pyjama|kimono|trikot|poncho|tunika|chino)/i,
   shoes: /(schuh|sneaker|stiefel|boots|sandale|pumps|loafer|ballerina|slipper|clog|espadrille|chucks|high heels|heels|mokassin|stiefelette|crocs)/i,
   bags: /(tasche|rucksack|clutch|shopper|geldbörse|portemonnaie|wallet|gürtel|sonnenbrille|uhr\b|armband|kette|ohrring|schmuck|ring\b|koffer|beutel)/i,
@@ -177,6 +245,7 @@ export const SYNONYMS = {
   'pullover': ['Pulli', 'Sweater', 'Strickpullover'], 'strickpullover': ['Pullover', 'Pulli', 'Strick'],
   'hoodie': ['Kapuzenpullover', 'Sweatshirt'], 'sweatshirt': ['Pullover', 'Sweater', 'Crewneck'],
   't-shirt': ['Shirt', 'Tee', 'Oberteil'], 'top': ['Oberteil', 'Shirt'], 'bluse': ['Oberteil', 'Hemdbluse'],
+  'body': ['Babybody', 'Baby'], 'strampler': ['Baby', 'Einteiler'], 'matschhose': ['Buddelhose', 'Regenhose'], 'schneeanzug': ['Overall', 'Winteroverall'], 'schlafanzug': ['Pyjama'], 'kleiderpaket': ['Paket', 'Bundle', 'Set'], 'leggings': ['Leggins', 'Hose'], 'blazer': ['Jacket', 'Sakko'], 'jumpsuit': ['Overall', 'Einteiler'], 'rock': ['Skirt'], 'shirt': ['T-Shirt', 'Oberteil'],
   'jeans': ['Denim', 'Hose'], 'hose': ['Pants', 'Trousers'], 'kleid': ['Dress', 'Sommerkleid'],
   'jacke': ['Übergangsjacke', 'Jacket'], 'mantel': ['Wintermantel', 'Coat'], 'strickjacke': ['Cardigan', 'Strick'],
   'sneaker': ['Turnschuhe', 'Sportschuhe', 'Schuhe'], 'stiefel': ['Boots', 'Stiefeletten'],
@@ -189,10 +258,19 @@ export const SYNONYMS = {
 // Saison-Keywords nach Monat (0 = Januar)
 export function seasonFor(month, catId, type = '') {
   const t = type.toLowerCase();
-  const winterish = /(mantel|jacke|pullover|pulli|strick|hoodie|stiefel|boots|schal|mütze|handschuh|parka|ski|cardigan|sweat)/.test(t);
-  const summerish = /(kleid|shorts|top|bikini|badeanzug|sandale|t-shirt|rock|leinen|sonnenbrille)/.test(t);
-  if (!['fashion', 'shoes', 'sports', 'bags'].includes(catId)) return null;
+  const winterish = /(schneeanzug|wolle|fleece|mantel|jacke|pullover|pulli|strick|hoodie|stiefel|boots|schal|mütze|handschuh|parka|ski|cardigan|sweat)/.test(t);
+  const summerish = /(badeanzug|badehose|sommerkleid|leinen|shorts|top|bikini|badeanzug|sandale|t-shirt|rock|leinen|sonnenbrille)/.test(t);
+  if (!['fashion', 'women', 'kids', 'shoes', 'sports', 'bags'].includes(catId)) return null;
+  if (/(schneeanzug|matschhose|buddelhose|thermo|skihose|winterjacke)/.test(t)) return month >= 8 || month <= 1 ? 'Winter' : null;
   if (winterish && (month >= 8 || month <= 1)) return month >= 10 || month <= 1 ? 'Winter' : 'Herbst';
   if (summerish && month >= 2 && month <= 7) return month <= 4 ? 'Frühling' : 'Sommer';
+  return null;
+}
+
+// Anlass-Keywords nach Saison (Damen) – nur wenn passend gewählt
+export function occasionKeyword(month, occasion) {
+  if (occasion === 'Hochzeitsgast' && month >= 2 && month <= 8) return 'Hochzeit';
+  if (occasion === 'Party' && (month === 10 || month === 11)) return 'Weihnachtsfeier Silvester';
+  if (occasion === 'Urlaub' && month >= 3 && month <= 7) return 'Sommerurlaub';
   return null;
 }

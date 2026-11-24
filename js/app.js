@@ -1,5 +1,5 @@
-import { CATEGORIES, CONDITIONS } from './data.js';
-import { buildAll, buildAiPrompt, categoryFromText } from './listing.js';
+import { CATEGORIES, CONDITIONS, measureHint, womenSizeHint } from './data.js';
+import { buildAll, buildAiPrompt, categoryFromText, kidAgeRange } from './listing.js';
 import { loadImage, toCanvas, hasTransparency, autoEnhance, sharpen, composeCutout, cropTo, canvasToBlob, dominantColor, BACKGROUNDS } from './imaging.js';
 
 const $ = s => document.querySelector(s);
@@ -16,7 +16,7 @@ const settings = Object.assign({ aiClassify: true, aiBg: true }, store.get('sett
 // ---------- Zustand ----------
 const state = {
   photos: [], // {id, file, thumb}
-  cat: 'fashion', catAuto: null, catManual: false,
+  cat: store.get('fashionPref', 'women'), catAuto: null, catManual: false,
   fields: {},
   aspect: store.get('aspect', '3:4'),
   bg: store.get('bg', 'studio'),
@@ -28,16 +28,40 @@ function renderCatChips() {
   const box = $('#catChips'); box.innerHTML = '';
   for (const [id, c] of Object.entries(CATEGORIES)) {
     const b = el('button', { className: 'chip' + (id === state.cat ? ' on' : ''), type: 'button' }, `${c.icon} ${c.label}`);
-    b.onclick = () => { state.catManual = true; setCategory(id); };
+    b.onclick = () => { state.catManual = true; if (c.fashion) store.set('fashionPref', id); setCategory(id); };
     box.appendChild(b);
   }
   $('#catHint').textContent = CATEGORIES[state.cat].hint;
-  $('#tryonBox').hidden = !CATEGORIES[state.cat].wearable || state.cat === 'shoes';
+  $('#tryonBox').hidden = !['women', 'fashion'].includes(state.cat);
+  $('#kidsBox').hidden = state.cat !== 'kids';
+}
+
+function fieldHint(key) {
+  const v = state.fields[key];
+  if (key === 'size' && state.cat === 'kids') { const a = kidAgeRange(v); return a ? `≈ ${a}` : ''; }
+  if (key === 'size' && state.cat === 'women') return womenSizeHint(v);
+  return '';
 }
 
 function renderFields() {
   const cat = CATEGORIES[state.cat];
   const box = $('#fields'); box.innerHTML = '';
+  // Schnellauswahl Artikeltyp (einhändig, ohne Tippen)
+  if (cat.quickTypes) {
+    const wrap = el('div', { className: 'field wide' });
+    wrap.appendChild(el('span', {}, 'Schnellauswahl'));
+    const row = el('div', { className: 'chips scroll' });
+    for (const qt of cat.quickTypes) {
+      const b = el('button', { type: 'button', className: 'chip' + (state.fields.type === qt ? ' on' : '') }, esc(qt));
+      b.onclick = () => {
+        state.fields.type = qt;
+        if (state.cat === 'kids' && qt === 'Kleiderpaket' && !state.fields.bundle) state.fields.bundle = '10';
+        saveDraft(); renderFields();
+      };
+      row.appendChild(b);
+    }
+    wrap.appendChild(row); box.appendChild(wrap);
+  }
   for (const f of cat.fields) {
     const label = f.key === 'brand' && cat.brandLabel ? cat.brandLabel : f.label;
     if (f.type === 'check') {
@@ -48,17 +72,36 @@ function renderFields() {
       box.appendChild(l);
       continue;
     }
+    if (f.type === 'chips') {
+      const wrap = el('div', { className: 'field wide' });
+      wrap.appendChild(el('span', {}, esc(label)));
+      const row = el('div', { className: 'chips' });
+      for (const o of f.options) {
+        const b = el('button', { type: 'button', className: 'chip sm' + (state.fields[f.key] === o ? ' on' : '') }, esc(o));
+        b.onclick = () => { state.fields[f.key] = state.fields[f.key] === o ? '' : o; saveDraft(); renderFields(); };
+        row.appendChild(b);
+      }
+      wrap.appendChild(row); box.appendChild(wrap);
+      continue;
+    }
     const l = el('label', { className: 'field' + (['measures', 'contents', 'type'].includes(f.key) ? ' wide' : '') });
-    const i = el('input', { value: state.fields[f.key] || '', placeholder: f.ph || '', inputMode: f.type === 'number' ? 'decimal' : 'text', autocapitalize: 'words' });
+    const ph = f.key === 'measures' && cat.fashion ? measureHint(state.fields.type) : (f.ph || '');
+    const i = el('input', { value: state.fields[f.key] || '', placeholder: ph, inputMode: f.type === 'number' ? 'numeric' : 'text', autocapitalize: f.key === 'size' ? 'characters' : 'words' });
     i.dataset.key = f.key;
+    const hint = el('small', { className: 'fhint' }, esc(fieldHint(f.key)));
     i.oninput = () => {
       state.fields[f.key] = i.value; saveDraft();
-      if (f.key === 'type' && !state.catManual) {
-        const guess = categoryFromText(i.value);
-        if (guess && guess !== state.cat) { setCategory(guess, true); $('#fields input[data-key="type"]')?.focus(); }
+      hint.textContent = fieldHint(f.key);
+      if (f.key === 'type') {
+        const m = $('#fields input[data-key="measures"]');
+        if (m && cat.fashion) m.placeholder = measureHint(i.value);
+        if (!state.catManual) {
+          const guess = categoryFromText(i.value);
+          if (guess && guess !== state.cat && !(guess === 'fashion' && cat.fashion)) { setCategory(guess, true); $('#fields input[data-key="type"]')?.focus(); }
+        }
       }
     };
-    l.append(el('span', {}, esc(label)), i);
+    l.append(el('span', {}, esc(label)), i, hint);
     box.appendChild(l);
   }
 }
@@ -140,6 +183,7 @@ async function detectCategory() {
     const c = toCanvas(img, 448);
     const r = await classify(c);
     state.catAuto = r;
+    if (r.cat === 'fashion') r.cat = store.get('fashionPref', 'women'); // Damen/Kinder/Herren merkt sich die App
     if (r.cat && !state.catManual) {
       setCategory(r.cat);
       if (r.type && !state.fields.type) { state.fields.type = r.type; renderFields(); }

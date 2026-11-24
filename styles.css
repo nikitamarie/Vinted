@@ -159,3 +159,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); ou
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 @media (max-width: 380px) { .fields { grid-template-columns: 1fr; } .thumbs { grid-template-columns: repeat(3, 1fr); } }
+
+.chip.sm { padding: 7px 12px; min-height: 36px; font-size: 13px; }
+.fhint { color: var(--accent); font-size: 12px; font-weight: 600; min-height: 0; }
+.fhint:empty { display: none; }
+.fields .chips.scroll { margin: 0 -16px; }

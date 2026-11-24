@@ -2,7 +2,7 @@
 
 Fotos hochladen → automatisch optimiert (Licht, Farbe, Schärfe, Zuschnitt, optional freigestellt auf Studio-Hintergrund) → fertiger Titel, Beschreibung, Suchbegriffe, Preisspanne & Foto-Checkliste → 1-Klick kopieren & Bilder in „Fotos“ sichern → in Vinted einfügen.
 
-Funktioniert für **alle Artikel**: Kleidung, Schuhe, Taschen/Accessoires, Elektronik, Haushalt, Wohnen/Deko, Bücher, Spielzeug, Sport, Beauty, Sonstiges.
+Schwerpunkt **Damen- & Kinderkleidung** (eigene Felder, Größen-/Altersumrechnung, Kleiderpakete, Anlass-Keywords) – funktioniert aber für **alle Artikel**: Herrenkleidung, Schuhe, Taschen/Accessoires, Elektronik, Haushalt, Wohnen/Deko, Bücher, Spielzeug, Sport, Beauty, Sonstiges.
 
 ---
 
@@ -85,6 +85,19 @@ Vinted veröffentlicht sein Ranking nicht – das sind bewährte Praxisregeln, k
 7. **Auffrischen statt Spammen:** Nach 2–4 Wochen neues Cover/Titel/Preis. Nie dasselbe Teil mehrfach parallel einstellen.
 8. **Saison:** Winterjacken ab September, Bademode ab April, Ski ab Oktober, Spielzeug vor Weihnachten. Die App ergänzt passende Saison-Keywords automatisch.
 9. **Kostenpflichtige Boosts** („Hochschieben“, „Schaufenster“) sind optional – organisch kommst du mit den Punkten 1–8 weit.
+
+### Spezial: Damen- & Kinderkleidung
+**Kinder**
+- Größe ist das Suchwort Nr. 1 („Gr. 98“) – immer in Titel *und* Vinted-Feld; Doppelgrößen (98/104) ausschreiben. Die App ergänzt automatisch das Alter („ca. 2–4 Jahre“).
+- Pakete pro Größe („Kleiderpaket Mädchen Gr. 92 · 10 Teile“) verkaufen sich schneller als viele Einzelteile unter 3 €. Hochwertige Marken lieber einzeln.
+- Saison früh: Schneeanzug/Winterjacke ab September, Matschhose Herbst/Frühjahr, Badesachen ab April, Kita-/Schulstart im Juli/August.
+- Knie, Ellbogen, Bündchen, Flecken ehrlich zeigen. **Keine Kinder auf Fotos** – Flatlay mit Studio-Hintergrund.
+
+**Damen**
+- Echtes Tragebild (Gesicht darf fehlen) als 2. Foto; Cover = freigestelltes Teil.
+- Größe doppelt: „Gr. 38 (M)“ + Maße + „fällt normal/klein/groß aus“ – macht die App automatisch.
+- Anlass/Stil als Suchwort, wenn passend: Hochzeitsgast (März–Sept.), Weihnachtsfeier/Silvester (Nov./Dez.), Business, Urlaub, Vintage, Boho, Old Money, Y2K.
+- Länge & Schnitt als echte Suchbegriffe: „Midikleid“, „Maxirock“, „High Waist“, „oversized“.
 
 ## Projektstruktur
 

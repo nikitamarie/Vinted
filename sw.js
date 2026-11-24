@@ -1,5 +1,5 @@
 // Service Worker: App offline-fähig machen + KI-Modelle einmalig cachen.
-const APP = 'inserat-app-v1';
+const APP = 'inserat-app-v2';
 const MODELS = 'inserat-models-v1';
 const SHELL = ['./', 'index.html', 'styles.css', 'manifest.webmanifest', 'js/app.js', 'js/data.js', 'js/listing.js', 'js/imaging.js', 'js/ai.js', 'icons/icon-192.png', 'icons/apple-touch-icon.png'];
 const MODEL_HOSTS = ['cdn.jsdelivr.net', 'staticimgly.com', 'storage.googleapis.com'];
