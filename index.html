@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Inserat Studio</title>
+  <meta name="description" content="Kostenlose iPhone-Web-App: Fotos optimieren, freistellen und verkaufsstarke Second-Hand-Anzeigen erstellen.">
+  <meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151716" media="(prefers-color-scheme: dark)">
+  <!-- iOS Home-Bildschirm -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Inserat">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Inserat Studio</h1>
+    <span class="pill" id="netState">0 € · lokal</span>
+  </header>
+
+  <main>
+    <!-- =============== ERSTELLEN =============== -->
+    <section id="view-create" class="view active" aria-label="Erstellen">
+
+      <div class="card">
+        <h2><span class="step">1</span> Fotos</h2>
+        <label class="drop" id="drop">
+          <input type="file" id="fileInput" accept="image/*" multiple>
+          <span class="drop-icon">📷</span>
+          <strong>Fotos aufnehmen oder auswählen</strong>
+          <small>Mehrere Bilder möglich · Cover = 1. Bild · ideal 5–8 Fotos</small>
+        </label>
+        <div class="thumbs" id="thumbs"></div>
+        <p class="hint" id="photoHint" hidden></p>
+      </div>
+
+      <div class="card">
+        <h2><span class="step">2</span> Kategorie <span class="badge" id="aiBadge" hidden></span></h2>
+        <div class="chips scroll" id="catChips"></div>
+        <p class="hint" id="catHint"></p>
+      </div>
+
+      <div class="card">
+        <h2><span class="step">3</span> Details</h2>
+        <div id="fields" class="fields"></div>
+        <label class="field"><span>Zustand</span>
+          <select id="condition"></select>
+        </label>
+        <div class="row2">
+          <label class="field"><span>Neupreis (optional, €)</span><input id="retail" inputmode="decimal" placeholder="z. B. 49,99"></label>
+        </div>
+        <label class="field"><span>Mängel / Gebrauchsspuren (ehrlich!)</span><input id="flaws" placeholder="z. B. kleiner Fleck am Ärmel"></label>
+        <div class="toggles">
+          <label class="toggle"><input type="checkbox" id="smokeFree"><span>Nichtraucherhaushalt</span></label>
+          <label class="toggle"><input type="checkbox" id="petFree"><span>Tierfreier Haushalt</span></label>
+          <label class="toggle"><input type="checkbox" id="keywordsOn" checked><span>Suchbegriffe anhängen</span></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="step">4</span> Bild-Look</h2>
+        <p class="label">Format</p>
+        <div class="chips" id="aspectChips"></div>
+        <p class="label">Hintergrund (Cover)</p>
+        <div class="chips scroll" id="bgChips"></div>
+        <div class="toggles">
+          <label class="toggle"><input type="checkbox" id="bgAll"><span>Hintergrund bei allen Fotos ersetzen</span></label>
+          <label class="toggle"><input type="checkbox" id="enhanceOn" checked><span>Auto-Licht & Farbe</span></label>
+          <label class="toggle"><input type="checkbox" id="sharpenOn" checked><span>Schärfen</span></label>
+        </div>
+        <p class="hint">Freistellen läuft lokal auf deinem iPhone (einmalig ~55 MB Download, am besten im WLAN). Detail- und Mängelfotos bleiben standardmäßig echt – das schafft Vertrauen.</p>
+
+        <details class="tryon" id="tryonBox" hidden>
+          <summary>👗 „Angezogen“-Modus (Kleidung)</summary>
+          <ol>
+            <li><b>Beste & ehrlichste Variante (0 €):</b> Selbst tragen – iPhone an Regal lehnen, Selbstauslöser 10 s, Tageslicht am Fenster, Gesicht darf abgeschnitten sein.</li>
+            <li><b>Ohne Model (0 €, lokal):</b> Artikel flach auf Bett/Boden legen oder auf Bügel an heller Tür → hier mit Hintergrund „Studio“ freistellen = sauberer Flatlay-/Ghost-Look.</li>
+            <li><b>KI-Model (Free-Tier, Cloud):</b> Erstelle zuerst das freigestellte Cover, sichere es, dann in Safari öffnen:
+              <div class="links">
+                <a href="https://huggingface.co/spaces/yisol/IDM-VTON" target="_blank" rel="noopener">IDM-VTON</a>
+                <a href="https://huggingface.co/spaces/Kwai-Kolors/Kolors-Virtual-Try-On" target="_blank" rel="noopener">Kolors Try-On</a>
+                <a href="https://huggingface.co/spaces/Nymbo/Virtual-Try-On" target="_blank" rel="noopener">Nymbo Try-On</a>
+              </div>
+              Model-Foto (Beispiel-Model der Seite) + dein Kleidungsbild hochladen → Ergebnis speichern.
+            </li>
+          </ol>
+          <p class="warn">⚠️ Free-Tier-Hinweis: Hugging Face-Spaces sind kostenlos, aber GPU-Kontingent pro Tag ist begrenzt (Warteschlange, „Quota exceeded“ → später erneut oder mit kostenlosem HF-Account mehr Kontingent). Spaces können zeitweise offline sein. Bilder werden dort hochgeladen – keine Fotos fremder Personen verwenden.</p>
+          <p class="warn">⚖️ Ehrlichkeit: KI-Tragebilder nie als Cover-Ersatz für echte Fotos nutzen. Prüfe, dass Farbe, Länge, Schnitt & Muster stimmen; markiere es in der Beschreibung.</p>
+          <label class="toggle"><input type="checkbox" id="aiImageNote"><span>Hinweis „KI-Tragebild“ in Beschreibung</span></label>
+        </details>
+      </div>
+
+      <div class="sticky-cta">
+        <button class="btn primary big" id="generateBtn" disabled>✨ Anzeige erstellen</button>
+      </div>
+
+      <div class="card result" id="result" hidden>
+        <h2>Fertig – jetzt in Vinted einstellen</h2>
+        <div class="progress" id="progress" hidden><div class="bar" id="progressBar"></div><span id="progressText"></span></div>
+        <div class="outgrid" id="outGrid"></div>
+        <p class="hint">Tippen = Vorher/Nachher. Lang drücken = einzelnes Bild sichern.</p>
+        <button class="btn primary" id="shareBtn">📥 Alle Bilder in „Fotos“ sichern</button>
+
+        <div class="out-block">
+          <div class="out-head"><b>Titel</b> <small id="titleCount"></small><button class="btn mini" data-copy="outTitle">Kopieren</button></div>
+          <input id="outTitle" class="out-input">
+        </div>
+        <div class="out-block">
+          <div class="out-head"><b>Beschreibung</b><button class="btn mini" data-copy="outDesc">Kopieren</button></div>
+          <textarea id="outDesc" rows="12" class="out-input"></textarea>
+        </div>
+        <div class="out-block price" id="priceBox"></div>
+        <div class="out-block">
+          <div class="out-head"><b>Foto-Checkliste</b> <small>was noch fehlt?</small></div>
+          <ul class="checklist" id="checklist"></ul>
+        </div>
+        <div class="btnrow">
+          <button class="btn" id="copyAllBtn">📋 Titel + Text kopieren</button>
+          <button class="btn" id="promptBtn">🤖 KI-Feinschliff-Prompt</button>
+        </div>
+        <a class="btn primary" id="openVinted" href="https://www.vinted.de/items/new" target="_blank" rel="noopener">Vinted öffnen → Artikel einstellen</a>
+        <p class="hint">In Vinted: Fotos aus „Zuletzt“ wählen → Titel/Beschreibung einfügen → Kategorie, Marke, Größe, Zustand, Farbe <b>in den Vinted-Feldern</b> setzen (wichtig für Filter!) → Preis.</p>
+        <button class="btn ghost" id="newBtn">↺ Neuer Artikel</button>
+      </div>
+    </section>
+
+    <!-- =============== VERLAUF =============== -->
+    <section id="view-history" class="view" aria-label="Verlauf">
+      <div class="card">
+        <h2>Verlauf</h2>
+        <p class="hint">Nur Texte & Mini-Vorschau, gespeichert lokal auf diesem iPhone (keine Cloud).</p>
+        <div id="historyList"></div>
+      </div>
+    </section>
+
+    <!-- =============== STRATEGIE =============== -->
+    <section id="view-guide" class="view" aria-label="Strategie">
+      <div class="card guide">
+        <h2>🚀 Vinted-Algorithmus-Strategie</h2>
+        <p class="hint">Vinted veröffentlicht seinen Ranking-Algorithmus nicht. Das hier sind bewährte, beobachtete Praxisregeln – keine Garantie.</p>
+        <h3>1. Die ersten 24–48 Stunden zählen</h3>
+        <p>Neue Artikel bekommen einen Frische-Bonus in Suche & Feed. Stelle zu Stoßzeiten ein: <b>abends 18–22 Uhr</b> und <b>Sonntag</b>. Lieber täglich 2–5 Artikel als 40 auf einmal.</p>
+        <h3>2. Filter = Sichtbarkeit</h3>
+        <p>Die meisten Käufer filtern nach Größe, Marke, Zustand, Farbe, Preis. Fülle <b>jedes Vinted-Feld</b> aus (tiefste Unterkategorie, Marke aus der Liste, bis zu 2 Farben, Material). Fehlt ein Feld, bist du in gefilterten Suchen unsichtbar.</p>
+        <h3>3. Titel: Marke + Artikel + Merkmal + Größe</h3>
+        <p>Begriffe nutzen, die Käufer tippen („Levi's 501 Jeans Blau W32“). Keine fremden Marken („wie Zara“) – das gilt als Markenmissbrauch und kann zur Löschung führen.</p>
+        <h3>4. Das Cover entscheidet über den Klick</h3>
+        <p>Hell, ruhiger Hintergrund, Artikel füllt das Bild, Hochformat. Danach: Etikett, Details, Mängel. Mehr echte Fotos = mehr Vertrauen = mehr Favoriten.</p>
+        <h3>5. Engagement-Signale</h3>
+        <p>Favoriten, Aufrufe und Nachrichten pushen den Artikel. <b>Antworte schnell</b>, versende innerhalb von 1–2 Tagen, sammle gute Bewertungen. Ein vollständiges Profil (Foto, Kurzbeschreibung) wirkt seriöser.</p>
+        <h3>6. Preis-Taktik</h3>
+        <p>Starte ~10–15 % über deinem Wunschpreis (Verhandlungspuffer). Bundle-Rabatte im Profil aktivieren. Nach 7–14 Tagen ohne Verkauf: Preis um ~10 % senken – Nutzer, die favorisiert haben, werden über Preissenkungen informiert.</p>
+        <h3>7. Auffrischen statt Spammen</h3>
+        <p>Nach 2–4 Wochen ohne Interesse: neues Cover, Titel überarbeiten, Preis anpassen. Gelegentliches Neu-Einstellen ist verbreitet – aber nie dasselbe Teil mehrfach parallel online stellen.</p>
+        <h3>8. Saison beachten</h3>
+        <p>Winterjacken ab September, Bademode ab April, Ski ab Oktober, Kostüme vor Karneval/Halloween, Spielzeug vor Weihnachten.</p>
+        <h3>9. Kostenpflichtige Boosts – optional</h3>
+        <p>„Hochschieben“ und „Schaufenster“ kosten Geld. Nicht nötig: Mit gutem Cover, vollständigen Feldern und Timing erreichst du viel organisch.</p>
+      </div>
+
+      <div class="card guide">
+        <h2>⚠️ Warum kein Auto-Upload-Bot?</h2>
+        <p>Vinted bietet <b>keine offizielle API für private Verkäufer</b>. Bots/Skripte, die sich einloggen und automatisch einstellen, verstoßen gegen die Nutzungsbedingungen (automatisierter Zugriff) und können zu <b>Einschränkungen oder Sperren</b> führen – plus Risiko, dein Passwort an Dritt-Tools zu geben.</p>
+        <p><b>Sicherer Schnell-Workflow (~1–2 Min. pro Artikel):</b> Fotos hier → „Anzeige erstellen“ → „Alle Bilder sichern“ → „Titel + Text kopieren“ → Vinted-App → einfügen → Felder setzen → fertig.</p>
+      </div>
+
+      <div class="card guide">
+        <h2>📱 iPhone-Tipps</h2>
+        <ul>
+          <li><b>Auf Home-Bildschirm:</b> Safari → Teilen-Symbol → „Zum Home-Bildschirm“.</li>
+          <li><b>Freistellen ohne Download:</b> In der iOS-Fotos-App Motiv lange drücken → „Teilen“ → „Bild sichern“ (PNG) – dieses PNG hier hochladen: die App erkennt die Transparenz und setzt den Studio-Hintergrund ohne eigenes Modell.</li>
+          <li><b>Akku/Speicher:</b> max. ~10 Fotos pro Artikel verarbeiten, andere Apps schließen. Bilder werden auf 1600 px verkleinert.</li>
+          <li><b>Fotos:</b> Tageslicht am Fenster, kein Blitz, 1×-Objektiv (nicht 0,5×), Artikel glätten/entfusseln.</li>
+        </ul>
+      </div>
+
+      <div class="card guide">
+        <h2>⚙️ Einstellungen & Kosten</h2>
+        <label class="toggle"><input type="checkbox" id="setAiClassify"><span>KI-Kategorie-Erkennung (lokal, einmalig ~14 MB)</span></label>
+        <label class="toggle"><input type="checkbox" id="setAiBg"><span>KI-Freistellen erlauben (lokal, einmalig ~55 MB)</span></label>
+        <table class="costs">
+          <tr><th>Baustein</th><th>Kosten</th></tr>
+          <tr><td>App, Bildoptimierung, Texte, Preise</td><td>0 € · offline</td></tr>
+          <tr><td>Freistellen &amp; Erkennung (im Browser)</td><td>0 € · nur Datenvolumen</td></tr>
+          <tr><td>Hosting (GitHub Pages)</td><td>0 €</td></tr>
+          <tr><td>KI-Tragebild (Hugging Face)</td><td>0 € · Tageslimit</td></tr>
+          <tr><td>KI-Feinschliff (ChatGPT/Gemini/Claude Free)</td><td>0 € · Nachrichtenlimit</td></tr>
+          <tr><td>Vinted „Hochschieben“/„Schaufenster“</td><td>kostenpflichtig – optional</td></tr>
+        </table>
+        <button class="btn ghost" id="clearCacheBtn">KI-Modelle aus dem Speicher löschen</button>
+        <p class="hint" id="storageInfo"></p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab active" data-view="create"><span>➕</span>Erstellen</button>
+    <button class="tab" data-view="history"><span>🕘</span>Verlauf</button>
+    <button class="tab" data-view="guide"><span>🚀</span>Strategie</button>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
